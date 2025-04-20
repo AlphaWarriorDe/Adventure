@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <title>Zork-Klon Adventure</title>
+  <style>
+    body { margin:0; padding:0; background:#111; color:#eee; font-family:sans-serif; }
+    #game { max-width:600px; margin:20px auto; }
+    #scene-image { width:100%; max-height:300px; object-fit:cover; border:2px solid #444; }
+    #description { margin:10px 0; }
+    #buttons { display:flex; flex-wrap:wrap; gap:5px; }
+    button { flex:1 1 auto; padding:10px; background:#333; color:#eee; border:none; border-radius:4px; font-size:16px; }
+    button:disabled { background:#555; color:#888; }
+  </style>
+</head>
+<body>
+  <div id="game">
+    <img id="scene-image" src="" alt="Szene">
+    <div id="description"></div>
+    <div id="buttons"></div>
+  </div>
+  <script>
+    const scenes = {
+      forest: {
+        image: 'https://via.placeholder.com/800x600?text=Wald',
+        desc: 'Du stehst in einem dunklen Wald. Wege führen nach Norden und Osten. Ein glänzender Schlüssel liegt am Boden.',
+        exits: { north: 'cave', east: 'house' },
+        item: 'key'
+      },
+      cave: {
+        image: 'https://via.placeholder.com/800x600?text=Höhle',
+        desc: 'Du befindest dich in einer feuchten Höhle. Ein Weg führt zurück nach Süden.',
+        exits: { south: 'forest' }
+      },
+      house: {
+        image: 'https://via.placeholder.com/800x600?text=Haus',
+        descLocked: 'Eine alte Haustür ist verschlossen.',
+        descOpen: 'Du hast die Tür geöffnet und betrittst das gemütliche Haus. Du hast gewonnen!',
+        exits: {}
+      }
+    };
+    let current = 'forest';
+    let inventory = [];
+    let houseUnlocked = false;
+    function render() {
+      const scene = scenes[current];
+      const img = document.getElementById('scene-image');
+      const descDiv = document.getElementById('description');
+      const btnDiv = document.getElementById('buttons');
+      img.src = scene.image;
+      if (current==='house') {
+        if (!houseUnlocked && inventory.includes('key')) {
+          houseUnlocked = true;
+        }
+        descDiv.textContent = houseUnlocked ? scene.descOpen : scene.descLocked;
+      } else {
+        descDiv.textContent = scene.desc;
+      }
+      btnDiv.innerHTML = '';
+      if (current==='forest' && scene.item && !inventory.includes(scene.item)) {
+        const takeBtn = document.createElement('button');
+        takeBtn.textContent = 'Schlüssel nehmen';
+        takeBtn.onclick = () => {
+          inventory.push(scene.item);
+          alert('Schlüssel aufgehoben!');
+          render();
+        };
+        btnDiv.appendChild(takeBtn);
+      }
+      for (const dir in scene.exits) {
+        const target = scene.exits[dir];
+        const btn = document.createElement('button');
+        btn.textContent = dir.charAt(0).toUpperCase()+dir.slice(1);
+        btn.onclick = () => {
+          if (target==='house' && !houseUnlocked) {
+            alert('Die Tür ist verschlossen.');
+          } else {
+            current = target;
+            render();
+          }
+        };
+        btnDiv.appendChild(btn);
+      }
+    }
+    render();
+  </script>
+</body>
+</html>
